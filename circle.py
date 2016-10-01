@@ -1,6 +1,5 @@
-#coding: utf-8
+# coding: utf-8
 
-import numpy as np
 import cv2
 
 capture = cv2.VideoCapture(2)
@@ -13,9 +12,9 @@ while True:
     gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
     preprocessed = cv2.GaussianBlur(gray, (7, 7), 0)
 
-    result = cv2.HoughCircles(image = preprocessed, method = cv2.HOUGH_GRADIENT, dp=1.5,
-                              param1 = 100, param2 = 110,
-                              minDist = 100, minRadius = 40, maxRadius =250)
+    result = cv2.HoughCircles(image=preprocessed, method=cv2.HOUGH_GRADIENT,
+                              dp=1.5, param1=100, param2=110,
+                              minDist=100, minRadius=40, maxRadius=250)
 
     if result is not None and len(result) > 0:
         circles = result[0]
@@ -30,4 +29,3 @@ while True:
 
 capture.release()
 cv2.destroyAllWindows()
-
