@@ -35,8 +35,8 @@ class NormalCamera:
 
             key = cv2.waitKey(1)
             if key == self.CV_WAITKEY_ENTER and circles is not None and len(circles) == 1:
-                _, _, radius = list(map(int,circles[0]))
                 cv2.destroyAllWindows()
+                _, _, radius = list(map(int,circles[0]))
                 return Ball(radius * 2)
             elif key == self.CV_WAITKEY_ESC:
                 self.capture.release()
