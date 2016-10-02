@@ -1,12 +1,15 @@
-import constant
-import camera
-import ball
+import sys
+from constant import MODE_3D
+from constant import BALL_COLOR
+from camera import StereoCamera
+from camera import NormalCamera
 
-print('please input camera id : ')
-camera_id = input()
+sys.stdout.write('please input camera id : ')
+camera_id = int(input())
 
-camera = StereoCamera.new(camera_id) if MODE_3D is True else NormalCamera.new(camera_id)
-ball = camera.detectBallProperty(BALL_COLOR)
+cam = StereoCamera(camera_id) if MODE_3D is True else NormalCamera(camera_id)
+ball = cam.detectBallProperty(BALL_COLOR)
 
 while True:
-    camera.detectBallMotion(ball)
+    motion = cam.detectBallMotion(ball)
+    print("Send Unity's application the data of motion capture")
