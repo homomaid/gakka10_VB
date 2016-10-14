@@ -15,7 +15,7 @@ class NormalCamera:
 
     def detectBallProperty(self, color):
         while True:
-            ret, frame = self.capture.read()
+            _, frame = self.capture.read()
 
             # 色抽出を書くならここ
 
@@ -34,18 +34,18 @@ class NormalCamera:
             cv2.imshow('Detecting Ball Diameter...', frame)
 
             key = cv2.waitKey(1)
-            if key == self.CV_WAITKEY_ENTER and circles is not None and len(circles) == 1:
-                cv2.destroyAllWindows()
-                _, _, radius = list(map(int,circles[0]))
-                return Ball(radius * 2)
-            elif key == self.CV_WAITKEY_ESC:
+            if key == self.CV_WAITKEY_ESC:
                 self.capture.release()
                 cv2.destroyAllWindows()
                 sys.exit()
+            elif key == self.CV_WAITKEY_ENTER and circles is not None and len(circles) == 1:
+                cv2.destroyAllWindows()
+                _, _, radius = list(map(int, circles[0]))
+                return Ball(radius * 2)
 
     def detectBallMotion(self, ball):
         while True:
-            ret, frame = self.capture.read()
+            _, frame = self.capture.read()
             cv2.imshow('Detecting Ball Motion...', frame)
 
             key = cv2.waitKey(1)
