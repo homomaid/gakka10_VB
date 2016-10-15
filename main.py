@@ -13,3 +13,7 @@ while True:
     motion = cam.detectBallMotion(ball)
     if motion == -1:
         continue
+    file = open(FILE_PATH, 'w+')
+    file.write(str(motion.position) + "\n" +
+               str(motion.velocity[0]) + '\n' +
+               str(motion.velocity[1]))

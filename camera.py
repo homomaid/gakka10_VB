@@ -1,6 +1,7 @@
 import cv2
 import sys
 import time
+import pprint
 from ball import Ball
 from motion import Motion
 from constant import CAMERA_WIDTH
@@ -10,25 +11,7 @@ from constant import CAMERA_HEIGHT
 class NormalCamera:
     CV_WAITKEY_ENTER = 13
     CV_WAITKEY_ESC = 27
-    CV_WAITKEY_R = 115
-
-    def extractColor(self, src, h_th_low, h_th_high, s_th, v_th):
-        hsv_image = cv2.cvtColor(src, cv2.COLOR_BGR2HSV)
-        h, s, v = cv2.split(hsv_image)
-
-        if h_th_low > h_th_high:
-            _, h_dst_low = cv2.threshold(h, h_th_low,  255, cv2.THRESH_BINARY)
-            _, h_dst_high = cv2.threshold(h, h_th_high, 255, cv2.THRESH_BINARY_INV)
-            h_dst = cv2.bitwise_or(h_dst_low, h_dst_high)
-        else:
-            _, h_dst = cv2.threshold(h, h_th_low, 255, cv2.THRESH_TOZERO)
-            _, h_dst = cv2.threshold(h_dst, h_th_high, 255, cv2.THRESH_TOZERO_INV)
-            _, h_dst = cv2.threshold(h_dst, 0, 255, cv2.THRESH_BINARY)
-
-        _, s_dst = cv2.threshold(s, s_th, 255, cv2.THRESH_BINARY)
-        _, v_dst = cv2.threshold(v, v_th, 255, cv2.THRESH_BINARY)
-
-        return cv2.bitwise_and(cv2.bitwise_and(h_dst, s_dst), v_dst)
+    CV_WAITKEY_R = 114
 
     def __init__(self, camera_id):
         self.capture = cv2.VideoCapture(camera_id)
@@ -62,53 +45,52 @@ class NormalCamera:
                 sys.exit()
             elif key == self.CV_WAITKEY_ENTER and circles is not None and len(circles) == 1:
                 cv2.destroyAllWindows()
-                x, y, radius = list(map(int, circles[0]))
-                hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
-                return Ball(radius, hsv[y][x])
+                _, _, radius = list(map(int, circles[0]))
+                return Ball(radius)
 
     def detectBallMotion(self, ball):
+        start = -1
         positions = []
+
         while True:
             _, frame = self.capture.read()
-            extracted = self.extractColor(frame, ball.color[0]-20,
-                                          ball.color[0]+20, ball.color[1],
-                                          ball.color[2])
-            masked = cv2.bitwise_and(frame, frame, mask=extracted)
+            fgmask = self.mog.apply(frame)
+            masked = cv2.bitwise_and(frame, frame, mask=fgmask)
+            cv2.imshow('Detecting Ball Motion...', masked)
 
             isBallDetected = False
             for y in range(0, int(CAMERA_HEIGHT / 32)):
                 height = int((y / 32) * CAMERA_HEIGHT)
                 ballX_Right = ballX_Left = -1
-                start = end = -1
-
                 for x in range(0, CAMERA_WIDTH):
-                    color = masked[height][x]
-                    if ballX_Right == -1 and color != 255:  # white
-                        ballX_Right = x
-                    if ballX_Right != -1 and ballX_Left == -1 and color == 255:
+                    color = fgmask[height][x]
+                    if ballX_Left <= -1 and color != 0: # '0' showes black.
                         ballX_Left = x
-                    if ballX_Right != -1 and ballX_Left == -1 and (ballX_Left - ballX_Right) >= ball.radius * 2 * 0.9:
-                        if start == -1:
-                            start = time.time()
-                        position = ((ballX_Left - ballX_Right) / 2, height)
+                    if ballX_Left > -1 and ballX_Right <= -1 and color == 0:
+                        ballX_Right = x
+                if ballX_Right > -1 and ballX_Left > -1 and (ballX_Right - ballX_Left) >= ball.radius * 2 * 0.8:
+                    if start == -1:
+                        start = time.clock()
+                    position = ((ballX_Right - ballX_Left) / 2, height)
+                    print('position = ' + str(position))
                     positions.append(position)
                     isBallDetected = True
 
-            cv2.imshow('Detecting Ball Motion...', masked)
             key = cv2.waitKey(1)
             if key == self.CV_WAITKEY_ESC:
                 self.capture.release()
                 cv2.destroyAllWindows()
                 sys.exit()
             elif key == self.CV_WAITKEY_R:
+                print('return -1')
                 return -1
+
             if positions != [] and isBallDetected is False:
-                end = time.time()
+                end = time.clock()
                 t = end - start
-                velocity = (int((abs(positions[-1][0] - positions[0][0])/t)),
-                            int((abs(positions[-1][1] - positions[-1][0])/t)))
-                print(position[0][0])
-                print(velocity)
+                velocity = (abs(positions[-1][0] - positions[0][0]) / t, abs(positions[-1][1] - positions[0][1]) / t)
+                print('time is ' + str(t))
+                print('velocity is ' + str(velocity))
                 return Motion(positions[0][0], velocity)
 
 
