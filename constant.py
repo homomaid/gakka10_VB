@@ -1,2 +1,4 @@
-BALL_COLOR = (0, 0, 0)
 MODE_3D = False
+CAMERA_WIDTH = 640
+CAMERA_HEIGHT = 480
+FILE_PATH = 'vector.txt'

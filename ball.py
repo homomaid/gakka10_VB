@@ -1,3 +1,3 @@
 class Ball:
-    def __init__(self, diameter):
-        self.diameter = diameter
+    def __init__(self, radius):
+        self.radius = radius
