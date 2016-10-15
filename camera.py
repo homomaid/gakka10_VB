@@ -4,6 +4,7 @@ import time
 import pprint
 from ball import Ball
 from motion import Motion
+from constant import CAMERA_FPS
 from constant import CAMERA_WIDTH
 from constant import CAMERA_HEIGHT
 
@@ -33,24 +34,25 @@ class NormalCamera:
             if result is not None and len(result) > 0:
                 circles = result[0]
                 for (x, y, r) in circles:
-                    print('Radius = ' + str(r))
-                    print('len(circles) = ' + str(len(circles)))
+                    print('[System] 円の半径: ' + str(int(r)))
                     cv2.circle(frame, (x, y), r, (0, 255, 0), 4)
-            cv2.imshow('Detecting Ball Diameter...', frame)
+            cv2.imshow('Detecting Ball Property...', frame)
 
             key = cv2.waitKey(1)
             if key == self.CV_WAITKEY_ESC:
                 self.capture.release()
                 cv2.destroyAllWindows()
                 sys.exit()
-            elif key == self.CV_WAITKEY_ENTER and circles is not None and len(circles) == 1:
+            elif key == self.CV_WAITKEY_ENTER and \
+                 circles is not None and len(circles) == 1:
                 cv2.destroyAllWindows()
                 _, _, radius = list(map(int, circles[0]))
-                return Ball(radius)
+                return Ball(int(radius))
 
-    def detectBallMotion(self, ball):
-        start = -1
+    def detectBallMotion(self, ball, waitTime = 0.5):
+        startTime = -1
         positions = []
+        noneDetectedCount = 0
 
         while True:
             _, frame = self.capture.read()
@@ -59,7 +61,7 @@ class NormalCamera:
             cv2.imshow('Detecting Ball Motion...', masked)
 
             isBallDetected = False
-            for y in range(0, int(CAMERA_HEIGHT / 32)):
+            for y in range(0, int(CAMERA_HEIGHT / 32)): #分解能
                 height = int((y / 32) * CAMERA_HEIGHT)
                 ballX_Right = ballX_Left = -1
                 for x in range(0, CAMERA_WIDTH):
@@ -68,30 +70,37 @@ class NormalCamera:
                         ballX_Left = x
                     if ballX_Left > -1 and ballX_Right <= -1 and color == 0:
                         ballX_Right = x
-                if ballX_Right > -1 and ballX_Left > -1 and (ballX_Right - ballX_Left) >= ball.radius * 2 * 0.8:
-                    if start == -1:
-                        start = time.clock()
+                if ballX_Right > -1 and ballX_Left > -1 and \
+                   ball.radius * 2 * 0.8 <= (ballX_Right - ballX_Left) and \
+                   (ballX_Right - ballX_Left) <= ball.radius * 2 * 1.2:
+                    if startTime == -1:
+                        startTime = time.clock()
                     position = ((ballX_Right - ballX_Left) / 2, height)
-                    print('position = ' + str(position))
+                    print('[Debug] position = ' + str(position))
                     positions.append(position)
                     isBallDetected = True
 
+            if isBallDetected is False:
+                noneDetectedCount += 1
+
+            if positions != [] and noneDetectedCount >= CAMERA_FPS * waitTime:
+                endTime = time.clock()
+                t = endTime - startTime
+                velocity = (abs(positions[-1][0] - positions[0][0]) / t, \
+                            abs(positions[-1][1] - positions[0][1]) / t)
+                print('[System] 計測完了！')
+                print('[System] 初期位置: ' + str(positions[0][0]))
+                print('[System] 速度: ' + str(velocity))
+                return Motion(positions[0][0], velocity)
+                
             key = cv2.waitKey(1)
             if key == self.CV_WAITKEY_ESC:
                 self.capture.release()
                 cv2.destroyAllWindows()
                 sys.exit()
             elif key == self.CV_WAITKEY_R:
-                print('return -1')
+                print('[System] R キーが押されました。計測結果をリセットします')
                 return -1
-
-            if positions != [] and isBallDetected is False:
-                end = time.clock()
-                t = end - start
-                velocity = (abs(positions[-1][0] - positions[0][0]) / t, abs(positions[-1][1] - positions[0][1]) / t)
-                print('time is ' + str(t))
-                print('velocity is ' + str(velocity))
-                return Motion(positions[0][0], velocity)
 
 
 class StereoCamera:
