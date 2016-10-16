@@ -25,7 +25,7 @@
 カメラ ID を入力して、そのカメラにて映像を表示するためのオブジェクトを生成します。
 StereoCamera クラスの場合、このメソッドの中でカメラキャリブレーションを行なうことになるでしょう。
 
-- detectBallProperty(self, color)
+- detectBallProperty(self)
 
 画面に表示される、検出できた円がひとつのみ場合に Enter キーを押すと、
 その円を運動を追いたいボールであるとして、Ball オブジェクトを返します。
@@ -33,22 +33,39 @@ StereoCamera クラスの場合、このメソッドの中でカメラキャリ�
 
 Esc キーを押すとプログラムを終了させます。
     
-- detectBallMotion(self, ball)
+- detectBallMotion(self, ball, waitTime = 0.5, resolution = 32)
 
 ボールの運動の解析した情報を返します。
+具体的には、ボールの直径と同程度のピクセル幅を持った物体の座標を検知し、その初期座標と平均の速度を返します。
+waitTime はボールを検出しなくなってからの待機時間を、resolution は y 軸方向の分解能を意味します。
 
 ### constant.py
 プログラム内に登場する諸定数を定義しています。
 
 #### list
-- BALL_COLOR
-
-想定しているボールの色情報を入力します。
-HSV色空間に則り、(H, S, V) のフォーマットで記述してください。
-
 - MODE_3D
 
 True にすると NormalCamera の代わりに StereoCamera オブジェクトを生成します。
+
+- CAMERA_FPS
+
+カメラの FPS 情報を保持しています。30から変更する必要はないと思います。
+
+- CAMERA_WIDTH
+
+カメラの横幅を設定しています。
+
+- CAMERA_HEIGHT
+
+カメラの縦幅を設定しています。
+
+- FILE_PATH
+
+Unity モジュールとデータをやりとりするためのファイルのパスを設定しています。
+
+- LANE_WIDTH
+
+実際にボールを投げるレーンの横幅を設定しています（単位は m）。
 
 ### main.py
 プログラム実行用のファイルです。
