@@ -49,7 +49,7 @@ class NormalCamera:
                 _, _, radius = list(map(int, circles[0]))
                 return Ball(int(radius))
 
-    def detectBallMotion(self, ball, waitTime = 0.5):
+    def detectBallMotion(self, ball, waitTime = 0.5, resolution = 32):
         startTime = -1
         positions = []
         noneDetectedCount = 0
@@ -61,7 +61,7 @@ class NormalCamera:
             cv2.imshow('Detecting Ball Motion...', masked)
 
             isBallDetected = False
-            for y in range(0, int(CAMERA_HEIGHT / 32)): #分解能
+            for y in range(0, int(CAMERA_HEIGHT / resolution)):
                 height = int((y / 32) * CAMERA_HEIGHT)
                 ballX_Right = ballX_Left = -1
                 for x in range(0, CAMERA_WIDTH):
@@ -88,11 +88,8 @@ class NormalCamera:
                 t = endTime - startTime
                 velocity = (abs(positions[-1][0] - positions[0][0]) / t, \
                             abs(positions[-1][1] - positions[0][1]) / t)
-                print('[System] 計測完了！')
-                print('[System] 初期位置: ' + str(positions[0][0]))
-                print('[System] 速度: ' + str(velocity))
                 return Motion(positions[0][0], velocity)
-                
+
             key = cv2.waitKey(1)
             if key == self.CV_WAITKEY_ESC:
                 self.capture.release()
