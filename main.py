@@ -32,8 +32,9 @@ while True:
     print('[System] 初期位置: ' + str(motionForUnity.position))
     print('[System] 速度: ' + str(motionForUnity.velocity))
 
-    file = open(FILE_PATH, 'w+')
+    file = open(FILE_PATH, 'w')
     file.write(str(motionForUnity.position) + "\n" +
-               str(motionForUnity.velocity[0]) + '\n' +
+               str(motionForUnity.velocity[0]) + "\n" +
                str(motionForUnity.velocity[1]))
+    file.close()
     print('[System] vector.txtに計測結果を記録しました。')
