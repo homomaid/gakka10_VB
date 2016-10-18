@@ -1,5 +1,4 @@
 import sys
-from ball import Ball
 from motion import Motion
 from constant import MODE_3D
 from constant import FILE_PATH
@@ -10,8 +9,8 @@ from camera import NormalCamera
 
 def calcBallMotionForUnity(motion):
     position  = motion.position / CAMERA_WIDTH * LANE_WIDTH
-    velocityX = motion.velocity[0] / CAMERA_WIDTH * LANE_WIDTH * 1.15
-    velocityY = motion.velocity[1] / CAMERA_WIDTH * LANE_WIDTH * 1.15
+    velocityX = motion.velocity[0] / CAMERA_WIDTH * LANE_WIDTH
+    velocityY = motion.velocity[1] / CAMERA_WIDTH * LANE_WIDTH
 
     return Motion(position, (velocityX, velocityY))
 

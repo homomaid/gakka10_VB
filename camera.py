@@ -1,7 +1,6 @@
 import cv2
 import sys
 import time
-import pprint
 from ball import Ball
 from motion import Motion
 from constant import CAMERA_FPS
@@ -80,7 +79,6 @@ class NormalCamera:
                     print('[Debug] position = ' + str(position))
                     positions.append(position)
                     isBallDetected = True
-
             if isBallDetected is False:
                 noneDetectedCount += 1
 
