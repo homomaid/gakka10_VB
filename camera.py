@@ -44,7 +44,7 @@ class NormalCamera:
                 cv2.destroyAllWindows()
                 sys.exit()
             elif key == self.CV_WAITKEY_ENTER and \
-                 circles is not None and len(circles) == 1:
+                circles is not None and len(circles) == 1:
                 cv2.destroyAllWindows()
                 _, _, radius = list(map(int, circles[0]))
                 return Ball(int(radius))
@@ -84,7 +84,7 @@ class NormalCamera:
 
             if positions != [] and noneDetectedCount >= CAMERA_FPS * waitTime:
                 endTime = time.clock()
-                t = endTime - startTime
+                t = endTime - startTime - waitTime
                 v_x = (positions[-1][0] - positions[0][0]) / t
                 if positions[0][1] > len(frame) / 2:
                     print('[Debug] 下から上へのボールの移動を検知しました、x方向の速度の向きを反転します')
