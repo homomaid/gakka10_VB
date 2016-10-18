@@ -8,11 +8,11 @@ from camera import StereoCamera
 from camera import NormalCamera
 
 def calcBallMotionForUnity(motion):
-    position  = motion.position / CAMERA_WIDTH * LANE_WIDTH
-    velocityX = motion.velocity[0] / CAMERA_WIDTH * LANE_WIDTH
-    velocityY = motion.velocity[1] / CAMERA_WIDTH * LANE_WIDTH
+    p  = motion.position / CAMERA_WIDTH * LANE_WIDTH
+    v_x = motion.velocity[0] / CAMERA_WIDTH * LANE_WIDTH
+    v_y = motion.velocity[1] / CAMERA_WIDTH * LANE_WIDTH
 
-    return Motion(position, (velocityX, velocityY))
+    return Motion(p, (v_x, v_y))
 
 print('[System] カメラ ID を入力してください')
 sys.stdout.write('（よくわからない場合 0 と入れてください）: ')
