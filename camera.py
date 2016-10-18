@@ -16,8 +16,9 @@ class NormalCamera:
 
     def __init__(self, camera_id):
         self.capture = cv2.VideoCapture(camera_id)
-        self.capture.set(3, CAMERA_WIDTH)
-        self.capture.set(4, CAMERA_HEIGHT)
+        self.capture.set(cv2.CAP_PROP_FRAME_WIDTH, CAMERA_WIDTH)
+        self.capture.set(cv2.CAP_PROP_FRAME_HEIGHT, CAMERA_HEIGHT)
+        self.capture.set(cv2.CAP_PROP_FPS, CAMERA_FPS)
 
         self.mog = cv2.createBackgroundSubtractorMOG2()
 
@@ -61,21 +62,21 @@ class NormalCamera:
             cv2.imshow('Detecting Ball Motion...', masked)
 
             isBallDetected = False
-            for y in range(0, int(CAMERA_HEIGHT / resolution)):
-                height = int((y / 32) * CAMERA_HEIGHT)
+            for y in range(0, resolution):
+                height = int((y / 32) * len(fgmask))
                 ballX_Right = ballX_Left = -1
-                for x in range(0, CAMERA_WIDTH):
+                for x in range(0, len(fgmask[height])):
                     color = fgmask[height][x]
-                    if ballX_Left <= -1 and color != 0: # '0' showes black.
+                    if ballX_Left == -1 and color != 0: # '0' showes black.
                         ballX_Left = x
-                    if ballX_Left > -1 and ballX_Right <= -1 and color == 0:
+                    if ballX_Left != -1 and ballX_Right == -1 and color == 0:
                         ballX_Right = x
-                if ballX_Right > -1 and ballX_Left > -1 and \
-                   ball.radius * 2 * 0.8 <= (ballX_Right - ballX_Left) and \
-                   (ballX_Right - ballX_Left) <= ball.radius * 2 * 1.2:
+                if ballX_Right != -1 and ballX_Left != -1 and \
+                   ball.radius * 2 * 0.7 <= (ballX_Right - ballX_Left) and \
+                   (ballX_Right - ballX_Left) <= ball.radius * 2 * 1.3:
                     if startTime == -1:
                         startTime = time.clock()
-                    position = ((ballX_Right - ballX_Left) / 2, height)
+                    position = ((ballX_Right + ballX_Left) / 2, height)
                     print('[Debug] position = ' + str(position))
                     positions.append(position)
                     isBallDetected = True
@@ -86,9 +87,13 @@ class NormalCamera:
             if positions != [] and noneDetectedCount >= CAMERA_FPS * waitTime:
                 endTime = time.clock()
                 t = endTime - startTime
-                velocity = (abs(positions[-1][0] - positions[0][0]) / t, \
-                            abs(positions[-1][1] - positions[0][1]) / t)
-                return Motion(positions[0][0], velocity)
+                v_x = (positions[-1][0] - positions[0][0]) / t
+                if positions[0][1] > len(frame) / 2:
+                    print('-1ばい')
+                    v_x *= -1
+                v_y = abs(positions[-1][1] - positions[0][1]) / t * -1
+                velocity = (v_x, v_y)
+                return Motion(positions[0][0] - len(frame[0]) / 2, velocity)
 
             key = cv2.waitKey(1)
             if key == self.CV_WAITKEY_ESC:
@@ -97,6 +102,7 @@ class NormalCamera:
                 sys.exit()
             elif key == self.CV_WAITKEY_R:
                 print('[System] R キーが押されました。計測結果をリセットします')
+                cv2.destroyAllWindows()
                 return -1
 
 
