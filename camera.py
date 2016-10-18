@@ -89,7 +89,7 @@ class NormalCamera:
                 t = endTime - startTime
                 v_x = (positions[-1][0] - positions[0][0]) / t
                 if positions[0][1] > len(frame) / 2:
-                    print('-1ばい')
+                    print('[Debug]下から上へのボールの移動を検知しました、x方向の速度の向きを反転します')
                     v_x *= -1
                 v_y = abs(positions[-1][1] - positions[0][1]) / t * -1
                 velocity = (v_x, v_y)
