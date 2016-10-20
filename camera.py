@@ -13,6 +13,9 @@ class NormalCamera:
     CV_WAITKEY_ESC = 27
     CV_WAITKEY_R = 114
 
+    def getCode(self, value):
+        return 1 if value >= 0 else -1
+
     def __init__(self, camera_id):
         self.capture = cv2.VideoCapture(camera_id)
         self.capture.set(cv2.CAP_PROP_FRAME_WIDTH, CAMERA_WIDTH)
@@ -75,7 +78,8 @@ class NormalCamera:
                    (ballX_Right - ballX_Left) <= ball.radius * 2 * 1.3:
                     if startTime == -1:
                         startTime = time.clock()
-                    position = ((ballX_Right + ballX_Left) / 2, height)
+                    # y, x の順で保存してることに注意
+                    position = (height, (ballX_Right + ballX_Left) / 2)
                     print('[Debug] position = ' + str(position))
                     positions.append(position)
                     isBallDetected = True
@@ -85,13 +89,17 @@ class NormalCamera:
             if positions != [] and noneDetectedCount >= CAMERA_FPS * waitTime:
                 endTime = time.clock()
                 t = endTime - startTime - waitTime
-                v_x = (positions[-1][0] - positions[0][0]) / t
-                if positions[0][1] > len(frame) / 2:
+                sortedPositions = sorted(positions)
+                direction_x  = 1
+                speed_x = abs(max(sortedPositions[1]) - min(sortedPositions[1])) / t
+                if positions[0][0] > len(frame) / 2:
                     print('[Debug] 下から上へのボールの移動を検知しました、x方向の速度の向きを反転します')
-                    v_x *= -1
-                v_y = abs(positions[-1][1] - positions[0][1]) / t * -1
-                velocity = (v_x, v_y)
-                return Motion(positions[0][0] - len(frame[0]) / 2, velocity)
+                    direction_x *= -1
+                direction_x *= getCode(positions[-1][1] - positions[0][1])
+                speed_y = abs(max(sortedPositions[0]) - min(sortedPositions[0])) / t
+                direction_y = -1
+                velocity = (speed_x * direction_x, speed_y * direction_y)
+                return Motion(positions[0][1] - len(frame[0]) / 2, velocity)
 
             key = cv2.waitKey(1)
             if key == self.CV_WAITKEY_ESC:
